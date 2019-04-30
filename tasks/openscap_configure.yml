@@ -1,8 +1,0 @@
----
-
-#foreman-rake foreman_openscap:bulk_upload:default
-- name: "Post Configure | Upload openscap defaults"
-  become: "yes"
-  shell: "foreman-rake foreman_openscap:bulk_upload:default"
-  ignore_errors: "yes"
-
