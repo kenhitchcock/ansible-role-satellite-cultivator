@@ -1,0 +1,30 @@
+---
+
+- name: Check if cv published
+  shell: >
+         hammer content-view info --organization '{{ orgname }}' --name '{{cvname}}' | grep 'Version:'
+  ignore_errors: true
+  register: cv_ver_pub
+
+- debug:
+    var: cv_ver_pub
+
+- name: Publish CV
+  shell: >
+         hammer content-view publish --organization '{{ orgname }}' --name '{{cvname}}'
+  ignore_errors: true
+  when: cv_ver_pub.rc == 1 
+
+- name: Promote to next lifecycle
+  shell: >
+         hammer content-view version promote --content-view '{{cvname}}' --organization '{{ orgname }}' \
+         --from-lifecycle-environment 'Library' --to-lifecycle-environment '{{ lcname }}' --version 1
+  ignore_errors: true
+  when: cv_ver_pub.rc == 1
+
+
+
+
+
+
+

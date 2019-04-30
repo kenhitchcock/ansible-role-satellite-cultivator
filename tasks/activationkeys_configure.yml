@@ -1,0 +1,28 @@
+---
+- name: Check if Activation Key created
+  shell: >
+         hammer activation-key list --organization '{{ item.orgname }}' \
+         | awk -F '|' '{print $2}' | grep -v NAME | grep -v '\-----'
+  register: enabled_aks
+  ignore_errors: true
+  with_items:
+    - "{{ configure_satellite_organizations }}"
+
+- set_fact:
+    enabled_aks={{ item.stdout }}
+  with_items: "{{ enabled_aks.results }}"    
+
+- name: "Create Activation Keys"
+  shell: >
+         hammer activation-key create  
+         --organization '{{ item[0].orgname }}'  \
+         --name '{{ item[1].ak }}' \
+         --content-view '{{ item[1].contentview }}' \
+         --lifecycle-environment '{{ item[1].lifecycle }}' \
+         --unlimited-hosts
+  ignore_errors: true
+  when: '"{{ item[1].ak }}" not in enabled_aks'
+  with_subelements:
+    - "{{ configure_satellite_organizations }}"
+    - activationkeys
+
