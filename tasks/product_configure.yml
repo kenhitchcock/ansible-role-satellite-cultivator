@@ -1,0 +1,25 @@
+---
+- name: "Check if Product created"
+  shell: >
+         hammer product list --organization '{{ item.orgname }}' \
+         | awk -F '|' '{print $2}' | grep -v NAME | grep -v '\-----'
+  register: enabled_products
+  ignore_errors: true
+  with_items:
+    - "{{ configure_satellite_organizations }}"
+
+- set_fact:
+    enabled_products={{ item.stdout }}
+  with_items: "{{ enabled_products.results }}"
+
+
+- name: "Create Products"
+  shell: >
+         hammer product create
+         --organization '{{ item[0].orgname }}'  \
+         --name '{{ item[1].product }}' \
+  ignore_errors: true
+  when: '"{{ item[1].product }}" not in enabled_products'
+  with_subelements:
+    - "{{ configure_satellite_organizations }}"
+    - products

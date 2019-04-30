@@ -1,0 +1,70 @@
+---
+- name: Check if Content view created
+  shell: >
+         hammer content-view list --organization '{{ item.orgname }}' \
+         | awk -F '|' '{print $2}' | grep -v NAME | grep -v '\-----'
+  register: enabled_cvs
+  ignore_errors: true
+  with_items:
+    - "{{ configure_satellite_organizations }}"
+
+- set_fact:
+    enabled_cvs={{ item.stdout }}
+  with_items: "{{ enabled_cvs.results }}"    
+
+#- debug:
+#    var: enabled_cvs
+
+#- debug:
+#    msg: "{{item[1].cv}}"
+#  when: '"{{ item[1].cv }}" not in enabled_cvs'
+#  with_subelements:
+#    - "{{ configure_satellite_organizations }}"
+#    - contentviews
+
+
+# Enable Yum repositories
+- name: "Create Content Views"
+  shell: >
+         hammer content-view create  
+         --organization '{{ item[0].orgname }}'  \
+         --name '{{ item[1].cv }}' \
+         --label '{{ item[1].cv }}' 
+  ignore_errors: true
+  when: '"{{ item[1].cv }}" not in enabled_cvs'
+  with_subelements:
+    - "{{ configure_satellite_organizations }}"
+    - contentviews
+
+
+- set_fact:
+    org_cvs: >
+      {{ org_cvs|d([])
+         + [ {} | combine(item.0) | combine(item.1) ]
+      }}
+  with_subelements:
+   - "{{ configure_satellite_organizations }}"
+   - contentviews
+
+- debug:
+    msg: " hammer content-view add-repository --name '{{ item[0].cv }}' --organization '{{ item[0].orgname }}' --repository '{{ item[1].cvrepo }}' --product '{{ item[1].product }}'"
+  when: 'item[0].cv  == item[1].cv '
+  with_subelements:
+   - "{{ org_cvs }}"
+   - cvrepositories
+
+- name: "Add repositories to content views"
+  shell: >
+         hammer content-view add-repository --name '{{ item[1].cv }}' \
+         --organization '{{ item[0].orgname }}' \
+         --repository '{{ item[1].cvrepo }}' \
+         --product '{{ item[1].product }}'
+  ignore_errors: "yes"
+  when: 'item[0].cv  == item[1].cv'
+  with_subelements:
+    - "{{ org_cvs }}"
+    - cvrepositories
+
+
+
+

@@ -1,0 +1,14 @@
+---
+
+- include: lifecycles_configure.yml 
+- include: openscap_configure.yml
+- include: product_configure.yml
+- include: repository_configure.yml
+- include: syncplans_configure.yml
+- include: contentviews_configure.yml
+- include: publish_contentviews.yml orgname="{{ item[0].orgname }}" cvname="{{ item[1].contentview }}" lcname="{{ item[1].lifecycle }}"
+  with_subelements:
+    - "{{ configure_satellite_organizations }}"
+    - activationkeys
+
+- include: activationkeys_configure.yml
