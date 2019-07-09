@@ -5,12 +5,11 @@
   register: lc_list
 
 # Create default Lifecycle
-- name: "Post Configure | Configure default Lifecycle"
+- name: "Post Configure | Configure Lifecycle - {{ lcname }}"
   become: "yes"
-  shell: "hammer lifecycle-environment create --organization  '{{ item.value.organization }}' --name '{{ item.key }}'
-       --description '{{ item.value.description }}' --prior '{{ item.value.prior }}'"
+  shell: "hammer lifecycle-environment create --organization  '{{ orgname }}' --name '{{ lcname }}'
+       --description '{{ lcdesc }}' --prior '{{ lcprior }}'"
   ignore_errors: "yes"
-  when: item.key not in lc_list.stdout
-  with_dict: "{{ configure_satellite_lifecycles }}"
+  when: lcname not in lc_list.stdout
 
 

@@ -1,7 +1,10 @@
 ---
 
-- include: lifecycles_configure.yml 
-- include: openscap_configure.yml
+- include: lifecycles_configure.yml orgname="{{ item[0].orgname }}" lcname="{{ item[1].lc }}" lcdesc="{{ item[1].description }}" lcprior="{{ item[1].prior }}"
+  with_subelements:
+    - "{{ configure_satellite_organizations }}"
+    - lifecycles
+
 - include: product_configure.yml
 - include: repository_configure.yml
 - include: syncplans_configure.yml
@@ -12,3 +15,4 @@
     - activationkeys
 
 - include: activationkeys_configure.yml
+- include: openscap_configure.yml

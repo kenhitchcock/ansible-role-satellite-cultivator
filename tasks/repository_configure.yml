@@ -2,7 +2,7 @@
 - name: Check if Repositories enabled
   shell: >
          hammer repository list --organization '{{ item.orgname }}' \
-         | awk -F '|' '{print $2}'
+         | grep -v NAME | awk -F '|' '{print $2}'
   register: enabled_repos
   ignore_errors: true
   with_items:
@@ -18,9 +18,10 @@
          hammer repository-set enable  --organization '{{ item[0].orgname }}'  \
          --product '{{ item[1].product }}'  \
          --name '{{ item[1].repo }}' \
-         --basearch '{{ item[1].basearch }}'
+         --basearch '{{ item[1].basearch }}' \
+         --releasever '{{ item[1].releasever }}'
   ignore_errors: true
-  when: '"{{ item[1].repo }}" not in enabled_repos'
+  when: '"{{ item[1].repo }} {{ item[1].basearch }} {{ item[1].releasever }}" not in enabled_repos'
   with_subelements:
     - "{{ configure_satellite_organizations }}"
     - yum_repository
