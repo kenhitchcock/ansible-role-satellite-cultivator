@@ -3,8 +3,6 @@ Role Name
 
 > This role was written to automate the configuration of satellite server from version 6.4 onwards.
 
-Register systems with either CDN or satellite.
-
 Requirements
 ------------
  Satellite will need to be installed and registered to Red Hat network, the manifest will
